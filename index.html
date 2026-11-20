@@ -14,13 +14,15 @@
     :root { --c-dark: #4e626a; --c-accent: #68aac6; --c-mid: #899faf; --c-light: #a7bcc9; --c-bg: #dbd8d6; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin: 0; padding: 14px; background: var(--c-bg); color: var(--c-dark); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; padding-bottom: 70px; }
-    h2 { font-size: 0.95rem; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+    h2 { font-size: 0.95rem; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .card { background: var(--c-light); border: 2px solid var(--c-mid); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
     .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
     input[type="text"] { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; }
     .btn { background: var(--c-dark); color: var(--c-bg); border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; font-weight: bold; cursor: pointer; flex: 1; touch-action: manipulation; }
     .btn:active { background: var(--c-mid); }
-    .btn-sub { background: var(--c-mid); color: var(--c-bg); border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.78rem; font-weight: bold; touch-action: manipulation; }
+    .btn-group { display: flex; gap: 6px; }
+    .btn-sub { background: var(--c-mid); color: var(--c-bg); border: 1.5px solid var(--c-dark); border-radius: 6px; padding: 4px 9px; font-size: 0.75rem; font-weight: bold; touch-action: manipulation; }
+    .btn-sub.active { background: var(--c-accent); color: var(--c-dark); }
     .pat-list { display: flex; flex-direction: column; gap: 8px; }
     .pat-item { display: flex; align-items: stretch; background: var(--c-bg); border: 1.5px solid var(--c-dark); border-radius: 8px; overflow: hidden; }
     .pat-text { flex: 1; padding: 10px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; min-height: 44px; display: flex; align-items: center; }
@@ -32,12 +34,14 @@
     .chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 18px; padding: 6px 12px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; user-select: none; touch-action: manipulation; }
     .chip.selected { background: var(--c-accent); font-weight: bold; border-width: 2px; }
-    .chip-del { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--c-mid); color: var(--c-bg); font-size: 0.72rem; }
+    .chip-del { display: none; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--c-dark); color: var(--c-bg); font-size: 0.72rem; }
+    .edit-mode .chip-del { display: inline-flex; }
     .form-col { display: flex; flex-direction: column; gap: 8px; }
     .presets { display: flex; flex-wrap: wrap; gap: 5px; }
     .preset-btn { background: var(--c-bg); color: var(--c-dark); border: 1px solid var(--c-dark); border-radius: 12px; padding: 3px 9px; font-size: 0.75rem; touch-action: manipulation; }
-    .suf-list { display: flex; flex-direction: column; gap: 10px; }
-    .suf-row { background: var(--c-bg); border: 1.5px solid var(--c-mid); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 10px; }
+    .suf-list { display: flex; flex-direction: column; gap: 8px; }
+    .suf-sub { font-size: 0.78rem; font-weight: bold; margin-top: 2px; }
+    .suf-row { background: var(--c-bg); border: 1.5px solid var(--c-mid); border-radius: 8px; padding: 7px 10px; display: flex; align-items: center; gap: 10px; }
     .suf-lbl { display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 0.95rem; min-width: 68px; }
     .suf-lbl input { width: 18px; height: 18px; accent-color: var(--c-dark); }
     input[type="range"] { flex: 1; accent-color: var(--c-dark); height: 6px; background: var(--c-light); border-radius: 4px; }
@@ -49,17 +53,21 @@
 <body>
   <div class="card">
     <h2>出力（3パターン生成）</h2>
-    <div class="row">
-      <button type="button" class="btn" id="btnGen">生成する</button>
-    </div>
+    <div class="row"><button type="button" class="btn" id="btnGen">生成する</button></div>
     <div class="pat-list">
       <div class="pat-item"><div class="pat-text" id="out0">ここに生成されます</div><button type="button" class="pat-copy" data-idx="0">コピー</button></div>
       <div class="pat-item"><div class="pat-text" id="out1">ここに生成されます</div><button type="button" class="pat-copy" data-idx="1">コピー</button></div>
       <div class="pat-item"><div class="pat-text" id="out2">ここに生成されます</div><button type="button" class="pat-copy" data-idx="2">コピー</button></div>
     </div>
   </div>
-  <div class="card">
-    <h2><span>単語選択（タップでON/OFF）</span><button type="button" class="btn-sub" id="btnAll">全選択/解除</button></h2>
+  <div class="card" id="selectCard">
+    <h2>
+      <span>単語選択</span>
+      <div class="btn-group">
+        <button type="button" class="btn-sub" id="btnAll">全選択/解除</button>
+        <button type="button" class="btn-sub" id="btnEdit">編集モード</button>
+      </div>
+    </h2>
     <div id="wordArea"></div>
   </div>
   <div class="card">
@@ -82,8 +90,11 @@
     const defS = [{ char: "……", enabled: true, prob: 40 }, { char: "！", enabled: true, prob: 25 }, { char: "ッ", enabled: false, prob: 20 }, { char: "っ", enabled: true, prob: 35 }, { char: "、", enabled: true, prob: 40 }];
     let words = JSON.parse(localStorage.getItem(K_W)) || defW;
     let sufs = JSON.parse(localStorage.getItem(K_S)) || defS;
+    let isEdit = false;
+
     function saveW() { localStorage.setItem(K_W, JSON.stringify(words)); renderW(); }
     function saveS() { localStorage.setItem(K_S, JSON.stringify(sufs)); }
+
     function renderW() {
       const area = document.getElementById('wordArea'), pre = document.getElementById('catPresets');
       area.innerHTML = ''; pre.innerHTML = '';
@@ -102,16 +113,22 @@
           const ch = document.createElement('div'); ch.className = 'chip' + (w.selected ? ' selected' : '');
           const lb = document.createElement('span'); lb.textContent = w.text;
           const dl = document.createElement('span'); dl.className = 'chip-del'; dl.textContent = '×';
-          dl.onclick = e => { e.stopPropagation(); words = words.filter(x => x.id !== w.id); saveW(); };
-          ch.onclick = () => { w.selected = !w.selected; saveW(); };
+          dl.onclick = e => { e.stopPropagation(); if (!isEdit) return; words = words.filter(x => x.id !== w.id); saveW(); toast('削除しました'); };
+          ch.onclick = () => { if (isEdit) return; w.selected = !w.selected; saveW(); };
           ch.append(lb, dl); wrap.appendChild(ch);
         });
         grp.appendChild(wrap); area.appendChild(grp);
       });
     }
+
     function renderS() {
       const list = document.getElementById('sufList'); list.innerHTML = '';
+      const labels = { "っ": "① 語尾の詰まり（重ねがけ可）", "……": "② 間の記号・余韻（文末の「、」は自動除外）" };
       sufs.forEach((s, i) => {
+        if (labels[s.char]) {
+          const sub = document.createElement('div'); sub.className = 'suf-sub'; sub.textContent = labels[s.char];
+          list.appendChild(sub);
+        }
         const row = document.createElement('div'); row.className = 'suf-row';
         const lbl = document.createElement('label'); lbl.className = 'suf-lbl';
         const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = s.enabled;
@@ -123,6 +140,14 @@
         row.append(lbl, rng, val); list.appendChild(row);
       });
     }
+
+    document.getElementById('btnEdit').onclick = () => {
+      isEdit = !isEdit;
+      document.getElementById('btnEdit').classList.toggle('active', isEdit);
+      document.getElementById('selectCard').classList.toggle('edit-mode', isEdit);
+      toast(isEdit ? '編集モードON（×で削除できます）' : '編集モードOFF');
+    };
+
     document.getElementById('btnAdd').onclick = () => {
       const c = document.getElementById('inCat').value.trim() || '未分類';
       const t = document.getElementById('inWord').value.trim();
@@ -130,14 +155,18 @@
       words.push({ id: Date.now() + Math.random(), category: c, text: t, selected: true });
       document.getElementById('inWord').value = ''; saveW(); toast('リストに追加しました');
     };
+
     document.getElementById('btnAll').onclick = () => {
       const any = words.some(w => !w.selected);
       words.forEach(w => w.selected = any); saveW();
     };
+
     document.getElementById('btnGen').onclick = () => {
       const actW = words.filter(w => w.selected);
       if (!actW.length) return toast('単語を1つ以上選択してください');
-      const actS = sufs.filter(s => s.enabled);
+      const tailGroup = sufs.filter(s => s.enabled && (s.char === 'っ' || s.char === 'ッ'));
+      const pauseGroup = sufs.filter(s => s.enabled && (s.char !== 'っ' && s.char !== 'ッ'));
+
       for (let i = 0; i < 3; i++) {
         const shuffled = [...actW];
         for (let k = shuffled.length - 1; k > 0; k--) {
@@ -145,14 +174,29 @@
           [shuffled[k], shuffled[r]] = [shuffled[r], shuffled[k]];
         }
         let str = '';
-        shuffled.forEach(w => {
-          str += w.text;
-          const hits = actS.filter(s => Math.random() * 100 < s.prob);
-          if (hits.length) str += hits[Math.floor(Math.random() * hits.length)].char;
+        shuffled.forEach((w, idx) => {
+          const isLast = (idx === shuffled.length - 1);
+          let wordText = w.text;
+
+          // ① 語尾の詰まり判定（すでに語尾がっ/ッで終わっていなければ重ねる）
+          const tailHits = tailGroup.filter(s => Math.random() * 100 < s.prob);
+          if (tailHits.length) {
+            const chosenTail = tailHits[Math.floor(Math.random() * tailHits.length)].char;
+            if (!wordText.endsWith(chosenTail)) wordText += chosenTail;
+          }
+          str += wordText;
+
+          // ② 間の記号・余韻判定（文末では「、」を除外）
+          const validPauses = isLast ? pauseGroup.filter(s => s.char !== '、') : pauseGroup;
+          const pauseHits = validPauses.filter(s => Math.random() * 100 < s.prob);
+          if (pauseHits.length) {
+            str += pauseHits[Math.floor(Math.random() * pauseHits.length)].char;
+          }
         });
         document.getElementById('out' + i).textContent = str;
       }
     };
+
     document.querySelectorAll('.pat-copy').forEach(b => {
       b.onclick = () => {
         const idx = b.dataset.idx, txt = document.getElementById('out' + idx).textContent;
@@ -160,11 +204,13 @@
         if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('パターン' + (+idx + 1) + 'をコピーしました'));
       };
     });
+
     let tmr;
     function toast(m) {
       const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show');
       clearTimeout(tmr); tmr = setTimeout(() => t.classList.remove('show'), 1500);
     }
+
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
     renderW(); renderS();
   </script>
