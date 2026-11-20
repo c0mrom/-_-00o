@@ -3,381 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <!-- 検索エンジンに載せない設定 -->
   <meta name="robots" content="noindex, nofollow, noarchive">
   <title>Word Generator</title>
-  
-  <!-- iPhone PWA設定 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="単語生成">
   <link rel="apple-touch-icon" href="IMG_4685.jpeg">
   <link rel="manifest" href="manifest.json">
-
   <style>
-    :root {
-      --c-dark: #4e626a;
-      --c-accent: #68aac6;
-      --c-mid: #899faf;
-      --c-light: #a7bcc9;
-      --c-bg: #dbd8d6;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      margin: 0;
-      padding: 16px;
-      background-color: var(--c-bg);
-      color: var(--c-dark);
-      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
-      padding-bottom: 60px;
-    }
-
-    h1 {
-      font-size: 1.1rem;
-      margin: 0 0 12px 0;
-      color: var(--c-dark);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* 生成エリア */
-    .card {
-      background-color: var(--c-light);
-      border: 2px solid var(--c-mid);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-    }
-
-    .result-box {
-      width: 100%;
-      min-height: 84px;
-      background-color: var(--c-bg);
-      color: var(--c-dark);
-      border: 2px solid var(--c-dark);
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 1rem;
-      line-height: 1.5;
-      resize: vertical;
-      margin-bottom: 10px;
-    }
-
-    .controls-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    label {
-      font-size: 0.85rem;
-      font-weight: bold;
-    }
-
-    input[type="number"], input[type="text"], select {
-      background-color: var(--c-bg);
-      color: var(--c-dark);
-      border: 1.5px solid var(--c-dark);
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 0.9rem;
-    }
-
-    input[type="number"] {
-      width: 60px;
-    }
-
-    .btn {
-      background-color: var(--c-dark);
-      color: var(--c-bg);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.9rem;
-      font-weight: bold;
-      cursor: pointer;
-      flex: 1;
-    }
-
-    .btn-accent {
-      background-color: var(--c-accent);
-      color: var(--c-dark);
-    }
-
-    .btn-mid {
-      background-color: var(--c-mid);
-      color: var(--c-bg);
-    }
-
-    .btn:active {
-      opacity: 0.8;
-    }
-
-    /* 単語チップエリア */
-    .category-block {
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--c-mid);
-    }
-
-    .category-title {
-      font-size: 0.9rem;
-      font-weight: bold;
-      margin: 0 0 8px 0;
-      color: var(--c-dark);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .chip-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .chip {
-      background-color: var(--c-bg);
-      color: var(--c-dark);
-      border: 1.5px solid var(--c-dark);
-      border-radius: 16px;
-      padding: 5px 12px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      user-select: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip.selected {
-      background-color: var(--c-accent);
-      color: var(--c-dark);
-      border-color: var(--c-dark);
-      font-weight: bold;
-    }
-
-    .chip-del {
-      font-size: 0.75rem;
-      opacity: 0.7;
-      padding-left: 4px;
-    }
-
-    /* アコーディオン（追加・末尾設定用） */
-    details {
-      background-color: var(--c-light);
-      border: 1.5px solid var(--c-mid);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 12px;
-    }
-
-    summary {
-      font-weight: bold;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .form-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--c-dark);
-      color: var(--c-bg);
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-    .toast.show {
-      opacity: 1;
-    }
+    :root { --c-dark: #4e626a; --c-accent: #68aac6; --c-mid: #899faf; --c-light: #a7bcc9; --c-bg: #dbd8d6; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; padding: 14px; background: var(--c-bg); color: var(--c-dark); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; padding-bottom: 70px; }
+    h2 { font-size: 0.95rem; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
+    .card { background: var(--c-light); border: 2px solid var(--c-mid); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+    .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .row label { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+    input[type="number"], input[type="text"] { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; }
+    input[type="number"] { width: 64px; text-align: center; }
+    .btn { background: var(--c-dark); color: var(--c-bg); border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; font-weight: bold; cursor: pointer; flex: 1; touch-action: manipulation; }
+    .btn:active { background: var(--c-mid); }
+    .btn-sub { background: var(--c-mid); color: var(--c-bg); border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.78rem; font-weight: bold; touch-action: manipulation; }
+    .pat-list { display: flex; flex-direction: column; gap: 8px; }
+    .pat-item { display: flex; align-items: stretch; background: var(--c-bg); border: 1.5px solid var(--c-dark); border-radius: 8px; overflow: hidden; }
+    .pat-text { flex: 1; padding: 10px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; min-height: 44px; display: flex; align-items: center; }
+    .pat-copy { background: var(--c-accent); color: var(--c-dark); border: none; border-left: 1.5px solid var(--c-dark); padding: 0 12px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; touch-action: manipulation; }
+    .pat-copy:active { background: var(--c-mid); color: var(--c-bg); }
+    .cat-group { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--c-mid); }
+    .cat-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .cat-head { font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; }
+    .chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 18px; padding: 6px 12px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; user-select: none; touch-action: manipulation; }
+    .chip.selected { background: var(--c-accent); font-weight: bold; border-width: 2px; }
+    .chip-del { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--c-mid); color: var(--c-bg); font-size: 0.72rem; }
+    .form-col { display: flex; flex-direction: column; gap: 8px; }
+    .presets { display: flex; flex-wrap: wrap; gap: 5px; }
+    .preset-btn { background: var(--c-bg); color: var(--c-dark); border: 1px solid var(--c-dark); border-radius: 12px; padding: 3px 9px; font-size: 0.75rem; touch-action: manipulation; }
+    .suf-list { display: flex; flex-direction: column; gap: 10px; }
+    .suf-row { background: var(--c-bg); border: 1.5px solid var(--c-mid); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 10px; }
+    .suf-lbl { display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 0.95rem; min-width: 68px; }
+    .suf-lbl input { width: 18px; height: 18px; accent-color: var(--c-dark); }
+    input[type="range"] { flex: 1; accent-color: var(--c-dark); height: 6px; background: var(--c-light); border-radius: 4px; }
+    .suf-val { font-size: 0.85rem; font-weight: bold; min-width: 40px; text-align: right; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--c-dark); color: var(--c-bg); padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
-
-  <h1>
-    <span>単語ジェネレーター</span>
-    <button class="btn-mid" style="border:none; border-radius:6px; padding:4px 8px; font-size:0.75rem;" onclick="toggleAllChips()">全選択/解除</button>
-  </h1>
-
-  <!-- 生成＆コピーエリア -->
   <div class="card">
-    <textarea id="output" class="result-box" placeholder="ここに生成されたテキストが表示されます"></textarea>
-    
-    <div class="controls-row">
-      <label>繋げる数:</label>
+    <h2>出力（3パターン生成）</h2>
+    <div class="row">
+      <label for="wordCount">単語数:</label>
       <input type="number" id="wordCount" value="4" min="1" max="30">
-      <label style="margin-left:8px;">
-        <input type="checkbox" id="useSuffix" checked> 単語末挿入あり
-      </label>
+      <button type="button" class="btn" id="btnGen">生成する</button>
     </div>
-
-    <div class="controls-row" style="margin-bottom:0;">
-      <button class="btn btn-accent" onclick="generateText()">ランダム生成</button>
-      <button class="btn" onclick="copyText()">コピー</button>
+    <div class="pat-list">
+      <div class="pat-item"><div class="pat-text" id="out0">ここに生成されます</div><button type="button" class="pat-copy" data-idx="0">コピー</button></div>
+      <div class="pat-item"><div class="pat-text" id="out1">ここに生成されます</div><button type="button" class="pat-copy" data-idx="1">コピー</button></div>
+      <div class="pat-item"><div class="pat-text" id="out2">ここに生成されます</div><button type="button" class="pat-copy" data-idx="2">コピー</button></div>
     </div>
   </div>
-
-  <!-- 単語リスト（カテゴリ別） -->
-  <div class="card" id="wordListArea">
-    <!-- JSで描画 -->
+  <div class="card">
+    <h2><span>単語選択（タップでON/OFF）</span><button type="button" class="btn-sub" id="btnAll">全選択/解除</button></h2>
+    <div id="wordArea"></div>
   </div>
-
-  <!-- 新規単語追加フォーム -->
-  <details>
-    <summary>＋ 単語を追加する</summary>
-    <div class="form-grid">
-      <input type="text" id="newCategory" list="categoryList" placeholder="サブタイトル（カテゴリ名）">
-      <datalist id="categoryList"></datalist>
-      <input type="text" id="newWord" placeholder="追加する単語（例：あっ、んっ…）">
-      <button class="btn" onclick="addWord()">リストに追加</button>
+  <div class="card">
+    <h2>単語登録</h2>
+    <div class="form-col">
+      <input type="text" id="inCat" placeholder="リスト名（カテゴリ）を入力">
+      <div class="presets" id="catPresets"></div>
+      <input type="text" id="inWord" placeholder="追加する単語を入力">
+      <button type="button" class="btn" id="btnAdd">リストに追加</button>
     </div>
-  </details>
-
-  <!-- 単語末挿入（ランダム）の設定 -->
-  <details>
-    <summary>⚙ 単語末のランダム挿入設定</summary>
-    <div class="form-grid">
-      <label>挿入する記号・語尾（カンマ区切り）:</label>
-      <input type="text" id="suffixInput" placeholder="例：、,……,っ,♡,！">
-      <label>挿入する確率（%）:</label>
-      <input type="number" id="suffixProb" min="0" max="100" value="60">
-      <button class="btn" onclick="saveSuffixSettings()">設定を保存</button>
-    </div>
-  </details>
-
+  </div>
+  <div class="card">
+    <h2>カスタマイズ設定（単語末挿入）</h2>
+    <div class="suf-list" id="sufList"></div>
+  </div>
   <div id="toast" class="toast">コピーしました</div>
-
   <script>
-    // 初期データ（初回起動時のみ）
-    const defaultData = [
-      { id: 1, category: "基本", text: "あっ", selected: true },
-      { id: 2, category: "基本", text: "んっ", selected: true },
-      { id: 3, category: "余韻", text: "はぁ", selected: true },
-      { id: 4, category: "余韻", text: "ふぅ", selected: true }
-    ];
-
-    let words = JSON.parse(localStorage.getItem('custom_words_v1')) || defaultData;
-    let suffixConfig = JSON.parse(localStorage.getItem('custom_suffix_v1')) || {
-      items: "、,……,っ,……っ",
-      prob: 60
-    };
-
-    // 初期化
-    document.getElementById('suffixInput').value = suffixConfig.items;
-    document.getElementById('suffixProb').value = suffixConfig.prob;
-
-    function saveWords() {
-      localStorage.setItem('custom_words_v1', JSON.stringify(words));
-      renderWords();
-    }
-
-    function renderWords() {
-      const area = document.getElementById('wordListArea');
-      const datalist = document.getElementById('categoryList');
-      area.innerHTML = '';
-      datalist.innerHTML = '';
-
-      if (words.length === 0) {
-        area.innerHTML = '<p style="font-size:0.85rem; margin:0;">下の「＋ 単語を追加する」から登録してください。</p>';
-        return;
-      }
-
-      // カテゴリごとにグループ化
-      const categories = [...new Set(words.map(w => w.category || '未分類'))];
-      
-      categories.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat;
-        datalist.appendChild(option);
-
-        const block = document.createElement('div');
-        block.className = 'category-block';
-        
-        const title = document.createElement('div');
-        title.className = 'category-title';
-        title.innerHTML = `<span>${escapeHtml(cat)}</span>`;
-        block.appendChild(title);
-
-        const container = document.createElement('div');
-        container.className = 'chip-container';
-
-        words.filter(w => (w.category || '未分類') === cat).forEach(word => {
-          const chip = document.createElement('div');
-          chip.className = 'chip' + (word.selected ? ' selected' : '');
-          chip.onclick = () => toggleWord(word.id);
-
-          const textSpan = document.createElement('span');
-          textSpan.textContent = word.text;
-
-          const delSpan = document.createElement('span');
-          delSpan.className = 'chip-del';
-          delSpan.textContent = '×';
-          delSpan.onclick = (e) => {
-            e.stopPropagation();
-            deleteWord(word.id);
-          };
-
-          chip.appendChild(textSpan);
-          chip.appendChild(delSpan);
-          container.appendChild(chip);
+    const K_W = 'wg_words_v2', K_S = 'wg_suffix_v2';
+    const defW = [{ id: 1, category: "基本", text: "あっ", selected: true }, { id: 2, category: "基本", text: "んっ", selected: true }, { id: 3, category: "吐息", text: "はぁ", selected: true }, { id: 4, category: "吐息", text: "ふぅ", selected: true }];
+    const defS = [{ char: "……", enabled: true, prob: 40 }, { char: "！", enabled: true, prob: 25 }, { char: "ッ", enabled: false, prob: 20 }, { char: "っ", enabled: true, prob: 35 }, { char: "、", enabled: true, prob: 40 }];
+    let words = JSON.parse(localStorage.getItem(K_W)) || defW;
+    let sufs = JSON.parse(localStorage.getItem(K_S)) || defS;
+    function saveW() { localStorage.setItem(K_W, JSON.stringify(words)); renderW(); }
+    function saveS() { localStorage.setItem(K_S, JSON.stringify(sufs)); }
+    function renderW() {
+      const area = document.getElementById('wordArea'), pre = document.getElementById('catPresets');
+      area.innerHTML = ''; pre.innerHTML = '';
+      const cats = [...new Set(words.map(w => w.category || '未分類'))];
+      cats.forEach(c => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'preset-btn'; b.textContent = '+ ' + c;
+        b.onclick = () => document.getElementById('inCat').value = c;
+        pre.appendChild(b);
+      });
+      if (!words.length) { area.innerHTML = '<div style="font-size:0.85rem;">下の「単語登録」から追加してください。</div>'; return; }
+      cats.forEach(c => {
+        const grp = document.createElement('div'); grp.className = 'cat-group';
+        const hd = document.createElement('div'); hd.className = 'cat-head'; hd.textContent = c; grp.appendChild(hd);
+        const wrap = document.createElement('div'); wrap.className = 'chip-wrap';
+        words.filter(w => (w.category || '未分類') === c).forEach(w => {
+          const ch = document.createElement('div'); ch.className = 'chip' + (w.selected ? ' selected' : '');
+          const lb = document.createElement('span'); lb.textContent = w.text;
+          const dl = document.createElement('span'); dl.className = 'chip-del'; dl.textContent = '×';
+          dl.onclick = e => { e.stopPropagation(); words = words.filter(x => x.id !== w.id); saveW(); };
+          ch.onclick = () => { w.selected = !w.selected; saveW(); };
+          ch.append(lb, dl); wrap.appendChild(ch);
         });
-
-        block.appendChild(container);
-        area.appendChild(block);
+        grp.appendChild(wrap); area.appendChild(grp);
       });
     }
-
-    function toggleWord(id) {
-      words = words.map(w => w.id === id ? { ...w, selected: !w.selected } : w);
-      saveWords();
-    }
-
-    function toggleAllChips() {
-      const anyUnselected = words.some(w => !w.selected);
-      words = words.map(w => ({ ...w, selected: anyUnselected }));
-      saveWords();
-    }
-
-    function addWord() {
-      const cat = document.getElementById('newCategory').value.trim() || '未分類';
-      const text = document.getElementById('newWord').value.trim();
-      if (!text) return;
-
-      words.push({
-        id: Date.now(),
-        category: cat,
-        text: text,
-        selected: true
+    function renderS() {
+      const list = document.getElementById('sufList'); list.innerHTML = '';
+      sufs.forEach((s, i) => {
+        const row = document.createElement('div'); row.className = 'suf-row';
+        const lbl = document.createElement('label'); lbl.className = 'suf-lbl';
+        const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = s.enabled;
+        chk.onchange = () => { sufs[i].enabled = chk.checked; saveS(); };
+        const sp = document.createElement('span'); sp.textContent = s.char; lbl.append(chk, sp);
+        const rng = document.createElement('input'); rng.type = 'range'; rng.min = 1; rng.max = 100; rng.value = s.prob;
+        const val = document.createElement('span'); val.className = 'suf-val'; val.textContent = s.prob + '%';
+        rng.oninput = () => { sufs[i].prob = +rng.value; val.textContent = rng.value + '%'; saveS(); };
+        row.append(lbl, rng, val); list.appendChild(row);
       });
-
-      document.getElementById('newWord').value = '';
-      saveWords();
-      showToast('追加しました');
     }
-
-    function deleteWord(id) {
-      words = words.filter(w => w.id !== id);
-      saveWords();
+    document.getElementById('btnAdd').onclick = () => {
+      const c = document.getElementById('inCat').value.trim() || '未分類';
+      const t = document.getElementById('inWord').value.trim();
+      if (!t) return toast('単語を入力してください');
+      words.push({ id: Date.now() + Math.random(), category: c, text: t, selected: true });
+      document.getElementById('inWord').value = ''; saveW(); toast('リストに追加しました');
+    };
+    document.getElementById('btnAll').onclick = () => {
+      const any = words.some(w => !w.selected);
+      words.forEach(w => w.selected = any); saveW();
+    };
+    document.getElementById('btnGen').onclick = () => {
+      const actW = words.filter(w => w.selected);
+      if (!actW.length) return toast('単語を1つ以上選択してください');
+      const cnt = Math.max(1, Math.min(30, +document.getElementById('wordCount').value || 4));
+      const actS = sufs.filter(s => s.enabled);
+      for (let i = 0; i < 3; i++) {
+        let str = '';
+        for (let j = 0; j < cnt; j++) {
+          str += actW[Math.floor(Math.random() * actW.length)].text;
+          const hits = actS.filter(s => Math.random() * 100 < s.prob);
+          if (hits.length) str += hits[Math.floor(Math.random() * hits.length)].char;
+        }
+        document.getElementById('out' + i).textContent = str;
+      }
+    };
+    document.querySelectorAll('.pat-copy').forEach(b => {
+      b.onclick = () => {
+        const idx = b.dataset.idx, txt = document.getElementById('out' + idx).textContent;
+        if (!txt || txt === 'ここに生成されます') return;
+        if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('パターン' + (+idx + 1) + 'をコピーしました'));
+      };
+    });
+    let tmr;
+    function toast(m) {
+      const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show');
+      clearTimeout(tmr); tmr = setTimeout(() => t.classList.remove('show'), 1500);
     }
-
-    function saveSuffixSettings() {
-      const items = document.getElementById('suffixInput').value;
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+    renderW(); renderS();
+  </script>
+</body>
+</html>
