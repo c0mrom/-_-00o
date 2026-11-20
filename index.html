@@ -17,9 +17,7 @@
     h2 { font-size: 0.95rem; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; }
     .card { background: var(--c-light); border: 2px solid var(--c-mid); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
     .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-    .row label { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
-    input[type="number"], input[type="text"] { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; }
-    input[type="number"] { width: 64px; text-align: center; }
+    input[type="text"] { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; }
     .btn { background: var(--c-dark); color: var(--c-bg); border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; font-weight: bold; cursor: pointer; flex: 1; touch-action: manipulation; }
     .btn:active { background: var(--c-mid); }
     .btn-sub { background: var(--c-mid); color: var(--c-bg); border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.78rem; font-weight: bold; touch-action: manipulation; }
@@ -52,8 +50,6 @@
   <div class="card">
     <h2>出力（3パターン生成）</h2>
     <div class="row">
-      <label for="wordCount">単語数:</label>
-      <input type="number" id="wordCount" value="4" min="1" max="30">
       <button type="button" class="btn" id="btnGen">生成する</button>
     </div>
     <div class="pat-list">
@@ -141,15 +137,19 @@
     document.getElementById('btnGen').onclick = () => {
       const actW = words.filter(w => w.selected);
       if (!actW.length) return toast('単語を1つ以上選択してください');
-      const cnt = Math.max(1, Math.min(30, +document.getElementById('wordCount').value || 4));
       const actS = sufs.filter(s => s.enabled);
       for (let i = 0; i < 3; i++) {
+        const shuffled = [...actW];
+        for (let k = shuffled.length - 1; k > 0; k--) {
+          const r = Math.floor(Math.random() * (k + 1));
+          [shuffled[k], shuffled[r]] = [shuffled[r], shuffled[k]];
+        }
         let str = '';
-        for (let j = 0; j < cnt; j++) {
-          str += actW[Math.floor(Math.random() * actW.length)].text;
+        shuffled.forEach(w => {
+          str += w.text;
           const hits = actS.filter(s => Math.random() * 100 < s.prob);
           if (hits.length) str += hits[Math.floor(Math.random() * hits.length)].char;
-        }
+        });
         document.getElementById('out' + i).textContent = str;
       }
     };
