@@ -17,12 +17,14 @@
     h2 { font-size: 0.95rem; margin: 0 0 10px 0; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .card { background: var(--c-light); border: 2px solid var(--c-mid); border-radius: 12px; padding: 12px; margin-bottom: 14px; }
     .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-    input[type="text"] { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; }
+    input[type="text"], textarea { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 8px; padding: 8px 10px; font-size: 16px; width: 100%; }
     .btn { background: var(--c-dark); color: var(--c-bg); border: none; border-radius: 8px; padding: 10px 14px; font-size: 0.95rem; font-weight: bold; cursor: pointer; flex: 1; touch-action: manipulation; }
     .btn:active { background: var(--c-mid); }
-    .btn-group { display: flex; gap: 6px; }
+    .btn-group { display: flex; gap: 6px; align-items: center; }
     .btn-sub { background: var(--c-mid); color: var(--c-bg); border: 1.5px solid var(--c-dark); border-radius: 6px; padding: 4px 9px; font-size: 0.75rem; font-weight: bold; touch-action: manipulation; }
     .btn-sub.active { background: var(--c-accent); color: var(--c-dark); }
+    .bracket-lbl { font-size: 0.78rem; font-weight: bold; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    .bracket-lbl input { width: 16px; height: 16px; accent-color: var(--c-dark); }
     .pat-list { display: flex; flex-direction: column; gap: 8px; }
     .pat-item { display: flex; align-items: stretch; background: var(--c-bg); border: 1.5px solid var(--c-dark); border-radius: 8px; overflow: hidden; }
     .pat-text { flex: 1; padding: 10px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; min-height: 44px; display: flex; align-items: center; }
@@ -30,7 +32,8 @@
     .pat-copy:active { background: var(--c-mid); color: var(--c-bg); }
     .cat-group { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--c-mid); }
     .cat-group:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-    .cat-head { font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; }
+    .cat-head { font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+    .cat-hint { font-size: 0.7rem; opacity: 0.8; font-weight: normal; }
     .chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip { background: var(--c-bg); color: var(--c-dark); border: 1.5px solid var(--c-dark); border-radius: 18px; padding: 6px 12px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; user-select: none; touch-action: manipulation; }
     .chip.selected { background: var(--c-accent); font-weight: bold; border-width: 2px; }
@@ -46,13 +49,17 @@
     .suf-lbl input { width: 18px; height: 18px; accent-color: var(--c-dark); }
     input[type="range"] { flex: 1; accent-color: var(--c-dark); height: 6px; background: var(--c-light); border-radius: 4px; }
     .suf-val { font-size: 0.85rem; font-weight: bold; min-width: 40px; text-align: right; }
+    details.card summary { font-size: 0.85rem; font-weight: bold; cursor: pointer; }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--c-dark); color: var(--c-bg); padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
     .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>出力（3パターン生成）</h2>
+    <h2>
+      <span>出力（3パターン生成）</span>
+      <label class="bracket-lbl"><input type="checkbox" id="chkBracket">「」付きコピー</label>
+    </h2>
     <div class="row"><button type="button" class="btn" id="btnGen">生成する</button></div>
     <div class="pat-list">
       <div class="pat-item"><div class="pat-text" id="out0">ここに生成されます</div><button type="button" class="pat-copy" data-idx="0">コピー</button></div>
@@ -83,13 +90,33 @@
     <h2>カスタマイズ設定（単語末挿入）</h2>
     <div class="suf-list" id="sufList"></div>
   </div>
+  <details class="card">
+    <summary>データ管理（バックアップ・復元）</summary>
+    <div class="form-col" style="margin-top:10px;">
+      <button type="button" class="btn-sub" id="btnExport">単語データをコピーして控える</button>
+      <textarea id="bkArea" rows="2" placeholder="復元する時はここにデータを貼り付け"></textarea>
+      <button type="button" class="btn-sub" id="btnImport">貼り付けたデータから復元</button>
+    </div>
+  </details>
   <div id="toast" class="toast">コピーしました</div>
   <script>
     const K_W = 'wg_words_v2', K_S = 'wg_suffix_v2';
     const defW = [{ id: 1, category: "基本", text: "あっ", selected: true }, { id: 2, category: "基本", text: "んっ", selected: true }, { id: 3, category: "吐息", text: "はぁ", selected: true }, { id: 4, category: "吐息", text: "ふぅ", selected: true }];
-    const defS = [{ char: "……", enabled: true, prob: 40 }, { char: "！", enabled: true, prob: 25 }, { char: "ッ", enabled: false, prob: 20 }, { char: "っ", enabled: true, prob: 35 }, { char: "、", enabled: true, prob: 40 }];
+    const baseS = [
+      { char: "っ", enabled: true, prob: 35, grp: 1 },
+      { char: "ッ", enabled: false, prob: 20, grp: 1 },
+      { char: "〜", enabled: true, prob: 30, grp: 1 },
+      { char: "……", enabled: true, prob: 40, grp: 2 },
+      { char: "！", enabled: true, prob: 25, grp: 2 },
+      { char: "♡", enabled: true, prob: 30, grp: 2 },
+      { char: "、", enabled: true, prob: 40, grp: 2 }
+    ];
     let words = JSON.parse(localStorage.getItem(K_W)) || defW;
-    let sufs = JSON.parse(localStorage.getItem(K_S)) || defS;
+    const savedS = JSON.parse(localStorage.getItem(K_S)) || [];
+    let sufs = baseS.map(b => {
+      const found = savedS.find(x => x.char === b.char);
+      return found ? { ...b, enabled: found.enabled, prob: found.prob } : b;
+    });
     let isEdit = false;
 
     function saveW() { localStorage.setItem(K_W, JSON.stringify(words)); renderW(); }
@@ -107,7 +134,15 @@
       if (!words.length) { area.innerHTML = '<div style="font-size:0.85rem;">下の「単語登録」から追加してください。</div>'; return; }
       cats.forEach(c => {
         const grp = document.createElement('div'); grp.className = 'cat-group';
-        const hd = document.createElement('div'); hd.className = 'cat-head'; hd.textContent = c; grp.appendChild(hd);
+        const hd = document.createElement('div'); hd.className = 'cat-head';
+        hd.innerHTML = `${c} <span class="cat-hint">（タップで一括切替）</span>`;
+        hd.onclick = () => {
+          const targets = words.filter(w => (w.category || '未分類') === c);
+          const anyOff = targets.some(w => !w.selected);
+          targets.forEach(w => w.selected = anyOff);
+          saveW();
+        };
+        grp.appendChild(hd);
         const wrap = document.createElement('div'); wrap.className = 'chip-wrap';
         words.filter(w => (w.category || '未分類') === c).forEach(w => {
           const ch = document.createElement('div'); ch.className = 'chip' + (w.selected ? ' selected' : '');
@@ -123,12 +158,9 @@
 
     function renderS() {
       const list = document.getElementById('sufList'); list.innerHTML = '';
-      const labels = { "っ": "① 語尾の詰まり（重ねがけ可）", "……": "② 間の記号・余韻（文末の「、」は自動除外）" };
       sufs.forEach((s, i) => {
-        if (labels[s.char]) {
-          const sub = document.createElement('div'); sub.className = 'suf-sub'; sub.textContent = labels[s.char];
-          list.appendChild(sub);
-        }
+        if (i === 0) { const t = document.createElement('div'); t.className = 'suf-sub'; t.textContent = '① 語尾の詰まり・伸び（重ねがけ可）'; list.appendChild(t); }
+        if (i === 3) { const t = document.createElement('div'); t.className = 'suf-sub'; t.textContent = '② 間の記号・余韻（文末の「、」は自動除外）'; list.appendChild(t); }
         const row = document.createElement('div'); row.className = 'suf-row';
         const lbl = document.createElement('label'); lbl.className = 'suf-lbl';
         const chk = document.createElement('input'); chk.type = 'checkbox'; chk.checked = s.enabled;
@@ -164,34 +196,28 @@
     document.getElementById('btnGen').onclick = () => {
       const actW = words.filter(w => w.selected);
       if (!actW.length) return toast('単語を1つ以上選択してください');
-      const tailGroup = sufs.filter(s => s.enabled && (s.char === 'っ' || s.char === 'ッ'));
-      const pauseGroup = sufs.filter(s => s.enabled && (s.char !== 'っ' && s.char !== 'ッ'));
+      const g1 = sufs.filter(s => s.enabled && s.grp === 1);
+      const g2 = sufs.filter(s => s.enabled && s.grp === 2);
 
       for (let i = 0; i < 3; i++) {
-        const shuffled = [...actW];
-        for (let k = shuffled.length - 1; k > 0; k--) {
+        const sh = [...actW];
+        for (let k = sh.length - 1; k > 0; k--) {
           const r = Math.floor(Math.random() * (k + 1));
-          [shuffled[k], shuffled[r]] = [shuffled[r], shuffled[k]];
+          [sh[k], sh[r]] = [sh[r], sh[k]];
         }
         let str = '';
-        shuffled.forEach((w, idx) => {
-          const isLast = (idx === shuffled.length - 1);
-          let wordText = w.text;
-
-          // ① 語尾の詰まり判定（すでに語尾がっ/ッで終わっていなければ重ねる）
-          const tailHits = tailGroup.filter(s => Math.random() * 100 < s.prob);
-          if (tailHits.length) {
-            const chosenTail = tailHits[Math.floor(Math.random() * tailHits.length)].char;
-            if (!wordText.endsWith(chosenTail)) wordText += chosenTail;
+        sh.forEach((w, idx) => {
+          const isLast = (idx === sh.length - 1);
+          let wt = w.text;
+          const h1 = g1.filter(s => Math.random() * 100 < s.prob);
+          if (h1.length) {
+            const c1 = h1[Math.floor(Math.random() * h1.length)].char;
+            if (!wt.endsWith(c1)) wt += c1;
           }
-          str += wordText;
-
-          // ② 間の記号・余韻判定（文末では「、」を除外）
-          const validPauses = isLast ? pauseGroup.filter(s => s.char !== '、') : pauseGroup;
-          const pauseHits = validPauses.filter(s => Math.random() * 100 < s.prob);
-          if (pauseHits.length) {
-            str += pauseHits[Math.floor(Math.random() * pauseHits.length)].char;
-          }
+          str += wt;
+          const v2 = isLast ? g2.filter(s => s.char !== '、') : g2;
+          const h2 = v2.filter(s => Math.random() * 100 < s.prob);
+          if (h2.length) str += h2[Math.floor(Math.random() * h2.length)].char;
         });
         document.getElementById('out' + i).textContent = str;
       }
@@ -199,11 +225,25 @@
 
     document.querySelectorAll('.pat-copy').forEach(b => {
       b.onclick = () => {
-        const idx = b.dataset.idx, txt = document.getElementById('out' + idx).textContent;
+        const idx = b.dataset.idx;
+        let txt = document.getElementById('out' + idx).textContent;
         if (!txt || txt === 'ここに生成されます') return;
+        if (document.getElementById('chkBracket').checked) txt = '「' + txt + '」';
         if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => toast('パターン' + (+idx + 1) + 'をコピーしました'));
       };
     });
+
+    document.getElementById('btnExport').onclick = () => {
+      const data = JSON.stringify(words);
+      if (navigator.clipboard) navigator.clipboard.writeText(data).then(() => toast('バックアップをコピーしました'));
+    };
+
+    document.getElementById('btnImport').onclick = () => {
+      try {
+        const arr = JSON.parse(document.getElementById('bkArea').value.trim());
+        if (Array.isArray(arr)) { words = arr; saveW(); document.getElementById('bkArea').value = ''; toast('復元しました'); }
+      } catch (e) { toast('データ形式が正しくありません'); }
+    };
 
     let tmr;
     function toast(m) {
